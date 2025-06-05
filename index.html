@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عالم المانجا/المانهوا</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Cairo', sans-serif;
+            box-sizing: border-box; /* هذا يضمن أن الحشو والحدود لا تتجاوز عرض العنصر */
+        }
+        
+        body {
+            overflow-x: hidden; /* هذا يخفي أي شريط تمرير أفقي غير مرغوب فيه */
+            min-height: 100vh; /* تأكد من أن الجسم يغطي كامل الارتفاع */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 100%; /* تأكد من أن الكونتينر لا يتجاوز عرض الشاشة */
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem; /* أضف بعض الحشو الافتراضي */
+            padding-right: 1rem; /* أضف بعض الحشو الافتراضي */
+        }
+
+        .manga-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .manga-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .manga-cover {
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+        
+        .search-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .page {
+            display: none;
+            flex-grow: 1; /* للسماح للصفحات بالنمو وتغطية المساحة المتاحة */
+        }
+        
+        .page.active {
+            display: flex; /* غيرتها إلى flex لتأكد من تمددها */
+            flex-direction: column;
+        }
+        
+        .tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .chapters-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .chapters-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(238, 90, 36, 0.3);
+        }
+
+        /* تعديلات خاصة لتصغير حجم القائمة المنسدلة "الأحدث" */
+        #sortSelect {
+            max-width: 150px; /* تحديد أقصى عرض للقائمة المنسدلة */
+            min-width: 100px; /* تحديد أدنى عرض لضمان عدم صغرها أكثر من اللازم */
+            white-space: nowrap; /* منع النص من الالتفاف */
+            overflow: hidden; /* إخفاء أي جزء يتجاوز العرض المحدد */
+            text-overflow: ellipsis; /* إضافة نقاط (...) إذا تجاوز النص العرض */
+        }
+        /* لتصغير حجم النص داخلها إذا لزم الأمر */
+        #sortSelect option {
+            font-size: 0.9rem; /* تصغير حجم الخط داخل الخيارات */
+        }
+
+    </style>
+</head>
+<body class="bg-gray-50"> 
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold gradient-text cursor-pointer" onclick="showHomePage()">
+                    <i class="fas fa-book-open ml-2"></i>
+                    عالم المانجا/المانهوا
+                </h1>
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <button class="text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <button class="text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-user"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="homePage" class="page active">
+        <div class="search-container py-12">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-4xl font-bold text-white mb-6">اكتشف عالم المانجا/المانهوا</h2>
+                <p class="text-white/80 mb-8 text-lg">آلاف القصص المصورة في انتظارك</p>
+                
+                <div class="max-w-2xl mx-auto relative">
+                    <input 
+                        type="text" 
+                        id="searchInput"
+                        placeholder="ابحث عن المانجا/المانهوا المفضلة لديك..." 
+                        class="w-full py-4 px-6 pr-12 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-white/30 text-lg"
+                        oninput="searchManga()"
+                    >
+                    <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-4 py-12 flex-grow"> 
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-bold text-gray-800">جميع المانجا</h3>
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <select id="sortSelect" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="sortManga()">
+                        <option value="latest">الأحدث</option>
+                        <option value="topRated">الأعلى تقييماً</option>
+                        <option value="mostRead">الأكثر قراءة (لا تعمل بعد)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="mangaGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                </div>
+
+            <div id="noResults" class="text-center py-12 hidden">
+                <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">لم يتم العثور على نتائج</h3>
+                <p class="text-gray-500">جرب البحث بكلمات مختلفة</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailPage" class="page">
+        <div class="container mx-auto px-4 py-8 flex-grow"> 
+            <button onclick="showHomePage()" class="back-btn text-white px-6 py-3 rounded-lg mb-6 hover:shadow-lg transition-all">
+                <i class="fas fa-arrow-right ml-2"></i>
+                العودة للرئيسية
+            </button>
+
+            <div id="mangaDetail" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // Manga data
+        const mangaData = [
+            {
+                id: 1,
+                title: "Dragon Ball Super",
+                cover: "https://i.ibb.co/PfW1Jyk/dragon-ball-super-cover.jpg",
+                story: "تدور قصة دراغون بول حول غوكو، محارب سايان طيب القلب، منذ طفولته. يبدأ غوكو رحلته بالبحث عن كرات التنين السبع، التي تستدعي التنين \"شينرون\" ليحقق أمنية واحدة عند جمعها. خلال مغامراته، يلتقي غوكو بشخصيات متنوعة ويتعلم فنون القتال، مشاركًا في بطولات عالمية تُظهر تطوره المستمر. مع تقدم السلسلة، يُكشف أن غوكو هو من عرق السايان، محاربون فضائيون يمتلكون قوة هائلة وقدرة على التحول إلى \"سوبر سايان\". يواجه غوكو وأصدقاؤه مجموعة من الأعداء الأقوياء الذين يهددون الأرض والكون، مثل بيكوريو، فيجيتا (منافسه ثم حليفه)، فريزا، سيل، وماجين بوو. تتميز السلسلة بالمعارك الملحمية، التحولات الدراماتيكية، والفكاهة، مع التركيز على قيم الصداقة، المثابرة، وتجاوز الذات. تمتد القصة عبر أجيال، حيث يواصل أبناء غوكو وأصدقائه مهمة حماية الكون",
+                tags: ["+13", "أكشن", "مغامرات", "خيال علمي", "شونين"],
+                status: "مستمرة",
+                rating: 4.8,
+                chaptersLink: "https://sites.google.com/view/jidjdjdj/%D8%A7%D9%84%D9%81%D8%B5%D9%841?read_current=1",
+                author: "أكيرا تورياما",
+                year: "2015"
+            },
+            {
+                id: 2,
+                title: "One-Punch Man",
+                cover: "https://i.ibb.co/v6971rRN/486cde98f2a5d322b081bd91ef8d7f3e-1.jpg",
+                story: "تدور قصة ون بنش مان حول سايتاما، بطل خارق يمتلك قوة فريدة تمكنه من هزيمة أي خصم بـلكمة واحدة فقط. بعد تدريب مكثف، أصبحت هذه القوة مصدر ملله الأكبر، إذ لا يجد أي تحدٍ حقيقي.ينضم سايتاما إلى جمعية الأبطال، لكنه يبدأ من أدنى الرتب بسبب مظهره العادي وعدم سعيه للشهرة. يلتقي بـجينوس، سايبورغ قوي يصبح تلميذه المخلص.تستعرض السلسلة العديد من الوحوش والكوارث، حيث يتدخل سايتاما لإنقاذ الموقف بلكمة واحدة، غالبًا دون الحصول على التقدير. تستمد الكوميديا من التناقض بين قوته الخارقة وحياته اليومية البسيطة، وتسخر من التصورات النمطية للأبطال الخارقين.يكمن جوهر القصة في كيفية تعامل سايتاما مع الملل الوجودي الناتج عن قوته اللامتناهية، وبحثه عن تحدٍ حقيقي بدلاً من الشهرة أو المال.",
+                tags: ["+13", "أكشن", "قوى خارقة", "كوميديا", "ساخرة"],
+                status: "مستمرة",
+                rating: 4.9,
+                chaptersLink: "https://sites.google.com/view/one-punch-man108/%D8%A7%D9%84%D8%B5%D9%81%D8%AD%D8%AD%D8%A9-%D8%A7%D9%84%D8%B1%D8%A6%D9%8A%D8%B3%D9%8A%D8%A9",
+                author: "ONE",
+                year: "2009"
+            },
+            // هذا السطر يدمج بيانات المانجا الإضافية من ملف manga_additional_data.js
+            ...(typeof additionalManga !== 'undefined' ? additionalManga : [])
+        ];
+
+        let filteredManga = [...mangaData]; 
+
+        function init() {
+            renderMangaGrid();
+        }
+
+        // Search functionality
+        function searchManga() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            let currentMangaData = [...mangaData]; 
+
+            if (searchTerm === '') {
+                filteredManga = [...currentMangaData];
+            } else {
+                filteredManga = currentMangaData.filter(manga => 
+                    manga.title.toLowerCase().includes(searchTerm) ||
+                    manga.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
+                    manga.author.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // بعد تطبيق البحث، نطبق الفرز الحالي (إذا كان موجوداً)
+            const currentSortOption = document.getElementById('sortSelect').value;
+            if (currentSortOption === 'topRated') {
+                filteredManga.sort((a, b) => b.rating - a.rating); // فرز تنازلي حسب التقييم
+            } else if (currentSortOption === 'latest') {
+                // الفرز حسب الأحدث: يتطلب خاصية تاريخ أو ID يمكن الفرز بناءً عليها
+                // حالياً، يمكن الفرز حسب الـ ID تنازلياً كتقريب للأحدث
+                filteredManga.sort((a, b) => b.id - a.id); 
+            }
+            // 'mostRead' لا توجد بيانات لها حالياً للفرز
+
+            renderMangaGrid();
+        }
+
+        // Sort functionality
+        function sortManga() {
+            const sortOption = document.getElementById('sortSelect').value;
+            
+            let tempManga = [...mangaData]; 
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (searchTerm !== '') {
+                tempManga = tempManga.filter(manga => 
+                    manga.title.toLowerCase().includes(searchTerm) ||
+                    manga.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
+                    manga.author.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (sortOption === 'topRated') {
+                tempManga.sort((a, b) => b.rating - a.rating); 
+            } else if (sortOption === 'latest') {
+                tempManga.sort((a, b) => b.id - a.id); 
+            }
+            
+            filteredManga = tempManga; 
+            renderMangaGrid(); 
+        }
+
+        // Render manga grid 
+        function renderMangaGrid() {
+            const grid = document.getElementById('mangaGrid');
+            const noResults = document.getElementById('noResults');
+            
+            if (filteredManga.length === 0) {
+                grid.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            
+            grid.innerHTML = filteredManga.map(manga => `
+                <div class="manga-card bg-white rounded-xl overflow-hidden shadow-lg" onclick="showMangaDetail(${manga.id})">
+                    <div class="relative">
+                        <img src="${manga.cover}" alt="${manga.title}" class="w-full manga-cover">
+                        <div class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                            ${manga.status}
+                        </div>
+                        <div class="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
+                            <i class="fas fa-star text-yellow-400 ml-1"></i>
+                            ${manga.rating}
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-gray-800 text-center truncate">${manga.title}</h4>
+                        <p class="text-gray-600 text-sm text-center mt-1">${manga.author}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show manga detail
+        function showMangaDetail(mangaId) {
+            // نستخدم mangaData للعثور على المانجا، حيث أنها تحتوي الآن على كل البيانات المدمجة
+            const manga = mangaData.find(m => m.id === mangaId);
+            if (!manga) return;
+
+            const detailContainer = document.getElementById('mangaDetail');
+            detailContainer.innerHTML = `
+                <div class="md:flex">
+                    <div class="md:w-1/3 p-6">
+                        <img src="${manga.cover}" alt="${manga.title}" class="w-full rounded-xl shadow-lg">
+                    </div>
+                    <div class="md:w-2/3 p-6">
+                        <div class="mb-6">
+                            <h1 class="text-3xl font-bold text-gray-800 mb-2">${manga.title}</h1>
+                            <p class="text-gray-600 mb-4">بواسطة ${manga.author} • ${manga.year}</p>
+                            
+                            <div class="flex items-center mb-4">
+                                <div class="flex text-yellow-400 text-xl ml-4">
+                                    ${Array(5).fill(0).map((_, i) => `
+                                        <i class="fas fa-star ${i < Math.floor(manga.rating) ? '' : 'text-gray-300'}"></i>
+                                    `).join('')}
+                                </div>
+                                <span class="text-lg font-semibold text-gray-700">${manga.rating}/5</span>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-3">التصنيفات</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    ${manga.tags.map(tag => `
+                                        <span class="tag text-white px-3 py-1 rounded-full text-sm">${tag}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="mb-6">
+                                <span class="inline-block px-4 py-2 rounded-lg ${manga.status === 'مستمرة' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} font-semibold">
+                                    الحالة: ${manga.status}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">القصة</h3>
+                            <p class="text-gray-700 leading-relaxed text-justify">${manga.story}</p>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <a href="${manga.chaptersLink}" target="_blank" class="chapters-btn text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center">
+                                <i class="fas fa-play ml-2"></i>
+                                اضغط هنا لمتابعة الفصول
+                            </a>
+                            <button class="border-2 border-blue-500 text-blue-500 px-6 py-4 rounded-xl font-bold hover:bg-blue-500 hover:text-white transition-all">
+                                <i class="fas fa-heart ml-2"></i>
+                                إضافة للمفضلة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById('detailPage').classList.add('active');
+        }
+
+        // Show home page
+        function showHomePage() {
+            document.getElementById('detailPage').classList.remove('active');
+            document.getElementById('homePage').classList.add('active');
+            // مسح حقل البحث وإعادة عرض جميع المانجا بترتيبها الافتراضي أو المختار
+            document.getElementById('searchInput').value = ''; 
+            sortManga(); 
+        }
+
+        // Initialize on page load
+        init();
+    </script>
+    <script src="manga_additional_data.js"></script> </body>
+</html>
